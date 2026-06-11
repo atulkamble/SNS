@@ -1,4 +1,4 @@
-# AWS SNS (Simple Notification Service) Practical Lab
+# AWS SNS (Simple Notification Service) 
 
 ## Objective
 
