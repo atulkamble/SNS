@@ -467,3 +467,107 @@ Security Alerts
 
 This lab covers SNS fundamentals, CLI commands, CloudWatch integration, real-world DevOps alerting scenarios, and interview-focused concepts.
 
+# AWS SNS — Use Cases & Architecture Flow
+
+![Image](https://images.openai.com/static-rsc-4/vCdmvVSh8B3Z5pUO-9Q8MPeMdm9byYtcrjtoMQZJIP7G_wjjWnSeTBgN7XZeB8Wg5C2NyUrskEowG_b0YrN9RRY3gq9mVEkHBj8UJ2Wbev8171dtTyqyWii6fASTo40hkOyp4MjAkXzibAq3p2qvKeum8AzxD5xkreWXRHHK18psLdDpuOT6jXsvHD4vAizz?purpose=fullsize)
+
+![Image](https://images.openai.com/static-rsc-4/Xtx3oWRb0e-NXoyCVFJknWkB6IHVX_7N_G_ClfAXhgGonZldE9TvV3yejdX-T9lLkcDirP4ixIlgpuZZBtLOCoZx16VN4zjGwTocYaF3c4mL0ss9DtHyhexsY3v7-oD6BjLxTlaqsn_8Mlikghjw_-iJ69iYUGh1MglHGjjdopOzXUJtD_z1BAAUIwhmA9TE?purpose=fullsize)
+
+![Image](https://images.openai.com/static-rsc-4/Js8CLJ-Vhg1q1bp9OUgN61MfZfIBm5AJ93a0WUZ4VIPbUT1l3jusxA2jFifuWvBA5lP5TsPF0k0IBosUCEdHmXBNFEz8f0yTswYT2_wOyOxsrzRB1StLQxkPjESMOsVQ0p3QBiJW1JxQktzeZdjIgAaaNEh0sniRltqMxPi2SJOhEkW6Loy67u_I6sRpJQRM?purpose=fullsize)
+
+![Image](https://images.openai.com/static-rsc-4/577Ld5IyJxSgT0uKERXHIxWSgHBjWHvdGqF61ftHCh-U6YyqXdlADkhiRiGAhSR5dM_CxUVRiaRjXO7KBodN9YWp3HK6Jhb9uQAeoeAMev98rjrOvbRUOZBLiRfj4Tlerm5293jfkYqE1A9HsRLm1_P-PVpyhaC-x20UWGvBopZoOzWFO3lfHNmAP2ZIFJ6a?purpose=fullsize)
+
+![Image](https://images.openai.com/static-rsc-4/PGryxao-2O-UZeo26huKskc0B9XAp-2TTfW9LYfbpxZNsGMlkLzRPXIxURexcoyJB30GcSpAVl97xr1kUE1yulLUephVBlYOZ4cUQz6QhUiPoNcBUZ6PanN_hMRHHgFB1KPrLCnaYZ-c5sp4OxwG8iKtgbXxwlOqFaxMCI_Po9iXZ3j2JVkQ0WFqzexXMyxE?purpose=fullsize)
+
+![Image](https://images.openai.com/static-rsc-4/6qRHkrDRYoWTN-xIpak0KXq7eW4HBJDKwzDqkjHRzmqFK3CQyr6TGw32XvJLM7Co2xDdIihzym1XrHwhDZk9bG-9XwaMg1Zq_uKQTb3GbDfJamuomHKmdtmVhTxTkCd4ihWo17lgWl-jR2GPV1xVwhtgkG90tH75Abjsx9IidcpGXUV_0pNN9JbV12kM84AP?purpose=fullsize)
+
+## What is Amazon SNS?
+
+**Amazon Simple Notification Service (SNS)** is a **fully managed Pub/Sub messaging service**.
+
+**Basic idea:**
+**Publisher → SNS Topic → Multiple Subscribers**
+
+One message published to a topic can be delivered to **many subscribers simultaneously**.
+
+### Architecture Flow
+
+```text
+                 Publisher
+             Application / AWS
+                     │
+                     │ Publish Message
+                     ▼
+              ┌──────────────┐
+              │  SNS Topic   │
+              └──────┬───────┘
+                     │
+              Fan-Out Message
+         ┌───────────┼───────────┬───────────┐
+         ▼           ▼           ▼           ▼
+       Email        SMS         SQS        Lambda
+         │           │           │           │
+         ▼           ▼           ▼           ▼
+       User        Mobile      Worker      Function
+```
+
+### Common SNS Use Cases
+
+| Use Case                     | Example Flow                                      |
+| ---------------------------- | ------------------------------------------------- |
+| 📧 Email notification        | CloudWatch → SNS → Email                          |
+| 📱 SMS alerts                | Application → SNS → SMS                           |
+| 🚨 Infrastructure alerts     | CloudWatch Alarm → SNS → Admin                    |
+| ⚡ Serverless processing      | Application → SNS → Lambda                        |
+| 📦 Queue fan-out             | SNS → Multiple SQS Queues                         |
+| 🛒 E-commerce events         | Order Service → SNS → Inventory + Payment + Email |
+| 🔔 Application notifications | App → SNS → Multiple subscribers                  |
+| 🔗 Webhook/API integration   | SNS → HTTP/HTTPS endpoint                         |
+
+## Important Architecture: SNS Fan-Out
+
+```text
+                         ┌──→ SQS → Order Processing
+                         │
+Order Service → SNS Topic├──→ SQS → Inventory
+                         │
+                         ├──→ Lambda → Send Notification
+                         │
+                         └──→ Email → Administrator
+```
+
+This is called **Fan-Out Architecture**: publish the event **once**, then SNS distributes it to multiple independent consumers.
+
+### Real-World Example: Online Order
+
+```text
+Customer
+   │
+   ▼
+Place Order
+   │
+   ▼
+Order Application
+   │
+   ▼
+SNS Topic: "NewOrder"
+   │
+   ├────→ SQS ───→ Payment Service
+   │
+   ├────→ SQS ───→ Inventory Service
+   │
+   ├────→ Lambda → Analytics
+   │
+   └────→ Email ─→ Operations Team
+```
+
+### SNS vs SQS — Remember This
+
+**SNS = Push + Pub/Sub + Fan-out**
+**SQS = Queue + Pull + Message buffering**
+
+A very common AWS architecture combines them:
+
+**Producer → SNS → SQS → Consumers**
+
+This gives you **SNS fan-out** plus **SQS durability, buffering, and independent processing**.
