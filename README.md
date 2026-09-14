@@ -1,3 +1,133 @@
+# Amazon SNS — Introduction & Use Cases
+
+![Image](https://images.openai.com/static-rsc-4/kMcKzRcOSsXp6LgqE3MPLu-cRwgH1uvp1ArN7AJxu7kvTnwCKg9-zTsCTJf9J5vOrLxJzE9sxuoIM1uBEPRzO9DhVQbaqJ6tt1rPDfug92wg9u3luE5b5L78ltv18_V9ofS2DTAIs0lvOWTcOiSzO1uxkkX6OeV4G1nhsySnDkEYBXhO_2kGQVyylrq4Iey3?purpose=fullsize)
+
+![Image](https://images.openai.com/static-rsc-4/obQUHdYnSe1ewW0VlQ4FmAzlynMjXv6NrzogqyrqRR5pPiORzpq-HcLB0AP5mZi_z9pGDCmwbWwV9S-za8QdupieSYh9tWFgF0qjU7X-UGvY2BzUq1yJIQAoR5dIrPdUQ3qgxmiAm3e0UEyTG4QOzHdv1Oig0w_BT113C7dpGscLYw3RnzhfGQ9Myrrg9p7T?purpose=fullsize)
+
+![Image](https://images.openai.com/static-rsc-4/EAsx5HBmWJpswdf4AA9oacanbNTD4yezr5MyftmpUbMVsdNoNaAtXZjjEKWJBLpzci4IUXNEdGVVYwwdw4Zyu4zr1ip5LuQtb4fnTeEWoIj5t48zZSqzqyzfRXyQRgZiZplCYqJEWZyh7c0qjs1hzHOUB5AWBoimLtz0rVBJ8Y6VApbLEDEqet2nYaInsnss?purpose=fullsize)
+
+![Image](https://images.openai.com/static-rsc-4/Q7dfB85dhUuF7kEZw9H_AVoLUFRSQ0YKb7Lpq11BRZFFvKOf-Lu1yR2TmnAp3-1ZwjliTfGUsoagiIh2KIyx_BDNR-aN-WREMruz9saBLQXyREz3WkeeekdD-Sr1mssM8qbCzk5_wiZt2KX1nGBl6IxzA_sNtCEotcSeYM6f4dklF3SlHp8jQ0u75oBAMCut?purpose=fullsize)
+
+## Introduction
+
+**Amazon SNS (Simple Notification Service)** is a **fully managed publish/subscribe (Pub/Sub) messaging service** from AWS.
+
+It allows one application or AWS service to **publish a message once** and distribute that message to **multiple subscribers**.
+
+```text
+                    Publisher
+                       │
+                       │ Publish Message
+                       ▼
+                ┌──────────────┐
+                │  SNS Topic   │
+                └──────┬───────┘
+                       │
+          ┌────────────┼────────────┐
+          ▼            ▼            ▼
+        Email         SQS          Lambda
+                                   Function
+```
+
+### Core Terms
+
+| Term             | Meaning                                            |
+| ---------------- | -------------------------------------------------- |
+| **Publisher**    | Application/service that sends the message         |
+| **Topic**        | Communication channel where messages are published |
+| **Subscriber**   | Destination that receives messages                 |
+| **Subscription** | Connection between a topic and subscriber          |
+| **Fan-out**      | One message delivered to multiple subscribers      |
+
+## Common Subscribers
+
+SNS can deliver notifications to destinations such as **SQS queues, Lambda functions, HTTP/HTTPS endpoints, email, and SMS**.
+
+```text
+Application
+     │
+     ▼
+ SNS Topic
+     │
+ ┌───┼────┬──────┬──────┐
+ ▼   ▼    ▼      ▼      ▼
+SQS Lambda Email  SMS  HTTPS
+```
+
+## Important Use Cases
+
+| Use Case                      | Example                                            |
+| ----------------------------- | -------------------------------------------------- |
+| **Application Notifications** | Application publishes an event to multiple systems |
+| **Email Alerts**              | Send infrastructure/application alerts by email    |
+| **SMS Notifications**         | OTPs, alerts, status notifications                 |
+| **Fan-out Messaging**         | One event → multiple SQS queues                    |
+| **Serverless Processing**     | SNS event → Lambda function                        |
+| **Monitoring Alerts**         | CloudWatch Alarm → SNS → Admin                     |
+| **S3 Event Processing**       | S3 event → SNS → multiple consumers                |
+| **Microservices**             | Notify multiple services when an event occurs      |
+
+### Example: CloudWatch Alert
+
+```text
+EC2
+ │
+ ▼
+CloudWatch Alarm
+ │
+ ▼
+SNS Topic
+ │
+ ▼
+Email / SMS
+ │
+ ▼
+Administrator
+```
+
+**Use case:** EC2 CPU utilization goes above a threshold → CloudWatch triggers an alarm → SNS sends the notification.
+
+### Example: SNS Fan-Out
+
+```text
+                   Application
+                       │
+                       ▼
+                  SNS Topic
+                       │
+              ┌────────┼────────┐
+              ▼        ▼        ▼
+            SQS-1    SQS-2    Lambda
+              │        │        │
+              ▼        ▼        ▼
+          Billing   Analytics  Logging
+```
+
+This is one of the most important SNS patterns: **publish once → process independently by multiple consumers**.
+
+### SNS vs SQS
+
+**SNS = Push + Pub/Sub + One-to-Many**
+
+**SQS = Queue + Pull + Message buffering**
+
+A common production architecture combines them:
+
+```text
+Producer
+   │
+   ▼
+SNS Topic
+   │
+   ├─────────► SQS Queue ──► Service A
+   │
+   ├─────────► SQS Queue ──► Service B
+   │
+   └─────────► Lambda ─────► Service C
+```
+
+**Key point:** Use **SNS when the same event needs to notify multiple consumers**. Use **SQS when messages need to wait safely in a queue until a consumer processes them**.
+
 # AWS SNS (Simple Notification Service) 
 
 ## Objective
